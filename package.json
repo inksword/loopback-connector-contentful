@@ -14,5 +14,10 @@
     "debug": "^2.2.0",
     "lodash": "^4.16.6",
     "loopback-connector": "^2.6.0"
+  },
+  "homepage": "https://github.com/inksword/loopback-connector-contentful",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/inksword/loopback-connector-contentful.git"
   }
 }
