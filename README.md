@@ -52,7 +52,10 @@ Specify the datasource for your model in model-config.json.
 
 ### References
 
-There are two references used, while building the module:
+The following references are used, while building the module:
 
-1. [building a connector](http://loopback.io/doc/en/lb2/Building-a-connector.html)
-2. [loopback-connector-mongodb](https://github.com/strongloop/loopback-connector-mongodb)
+1. loopback guide on [building a connector](http://loopback.io/doc/en/lb2/Building-a-connector.html)
+2. loopback official connector [loopback-connector-mongodb](https://github.com/strongloop/loopback-connector-mongodb)
+3. [contentful management API](https://contentful.github.io/contentful-management.js/contentful-management/1.2.1/index.html)
+4. [contentful delivery API](https://contentful.github.io/contentful.js/contentful/3.7.0/index.html)
+
