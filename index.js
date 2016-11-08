@@ -1,9 +1,6 @@
 var Contentful = require('./lib/contentful');
 
-module.exports.initialize = function initializeDataSource(dataSource, callback) {
-  if (!contentful) {
-    return;
-  }
+exports.initialize = function initializeDataSource(dataSource, callback) {
 
   var s = dataSource.settings;
 
