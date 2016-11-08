@@ -17,6 +17,7 @@ Add the following configuration to the datasources.json.
   "connector": "contentful",
   "accessToken": "<access token>",
   "spaceId": "<space id>",
+  "locale": "en-US",
   "debug": true | false
 }
 ```
@@ -35,6 +36,7 @@ Specify the datasource for your model in model-config.json.
 
 * connector.create
 * connector.all
+* connector.update
 
 #### Not Implemented Yet
 
@@ -45,7 +47,6 @@ Specify the datasource for your model in model-config.json.
 - connector.destroyAll
 - connector.count
 - connector.save
-- connector.update
 - connector.destroy
 - connector.replaceById (a new feature - work in progress)
 - connector.updateAttributes 
