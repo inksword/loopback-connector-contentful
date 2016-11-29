@@ -1,9 +1,9 @@
 # loopback-connector-contentful
-The module is still under development, and not fully tested. I am going to use it with a projects by Jan 2017, and still doing experiments with it currently.
+The module is still under development, and not fully tested. I am going to use it with a project by Jan 2017, and still doing experiments with it currently.
 
 ## NodeJS Version
 
-Developed under NodeJS 6.9.1 with ES6 in mind. Will have a compatability test for some older versions, which show obvious compatable possibilties from [http://node.green/](http://node.green/). Here is a list of ES6 features used in the module:
+Developed under NodeJS 6.9.1 with ES6. Will have a compatability test for some older versions, which show obvious compatable possibilties from [http://node.green/](http://node.green/). Here is a list of ES6 features used in the module:
 
 - arrow function
 - class
@@ -44,25 +44,71 @@ Specify the datasource for your model in model-config.json.
 }
 ```
 
-### SpaceId Resolving Order
+Model Definition
 
-Space id could be optional, when your model name is unique across spaces in your contentful organization.  Anyway, the space id resolving order is described as below:
+```json
+{
+  "name": "Product",
+  "options": {
+    "displayField": "productName"
+  },
+  "properties": {
+    "productName": "text",
+    "productDescription": {
+      "type": "text",
+      "required": false,
+      "contentful": {
+        "name": "Product Description",
+        "dataType": "Text"
+        "localized": false,
+        "validations": [{"size": {"min": 20, "max": 200}}],
+        "disabled": false,
+        "omitted": false
+      }
+    },
+    "tags": {
+      "type": [
+        "string"
+      ]
+    }
+  },
+  "relations": {
+    "categories": {
+      "type": "hasMany",
+      "model": "Category",
+      "contentful": {
+        "name": "Product Categories",
+        "localized": false,
+        "validations": [],
+        "disabled": false,
+        "omitted": false
+      }
+    },
+    "brand": {
+      "type": "belongsTo",
+      "model": "Brand"
+    }
+  }
+}
+```
 
-1. Use spaceId defined in model-config.json. could be different from the one defined in datasources.json. 
-2. Use spaceId defined in datasources.json.
-3. If spaceId is not defined above, try to look up the model from spaces, and return the id of the first space having the matching content type.
+
+
+### Space Resolving Order
+
+SpaceId **MUST** be defined in datasources.json file. When saving or retrieving a model, its space is resolved in the following order:
+
+1. Use spaceId defined in model-config.json. Raise error if no matching content type within the space. 
+2. Use spaceId defined in datasources.json. Raise error if no matching content type within the space. 
+3. Raise error if spaceId is not defined above.
 
 ### Locale Resolving Order
 
-Locale could be optional, but a model could only be associated with one locale currently. The locale resolving order is described as below:
+When saving or retrieving a model, its local is resolved in the following order:
 
 1. Use locale defined in model-config.json.
 2. Use locale defined in datasources.json.
 3. If locale is not defined above, use the default locale of the space to save and retrieve models from contentful
-
-## Model Relations
-
-!! Relations are not handled in all APIs, it will be implemented in next release, since it's crucial to projects.
 
 ## Auto Update
 
@@ -87,35 +133,22 @@ module.exports = function(app) {
 | Object        | Object          |
 | ["string"]    | Array           |
 
-### Property Definition
+### Model Relations
 
-```json
-"productDescription": {
-  "type": "string",
-  "required": false,
-  "contentful": {
-    "name": "Product Description",
-    "dataType": "Symbol",
-    "localized": false,
-    "validations": [{
-      "size": {
-        "min": 20,
-        "max": 200
-      }
-    }],
-    "disabled": false,
-    "omitted": false
-  }
-}
-```
+The following relations can be automatically created during autoupdate phase:
+
+| Loopback Relations  | Status            |
+| ------------------- | ----------------- |
+| belongsTo           | Supported         |
+| hasMany             | Supported         |
+| hasManyThrough      | Not supported yet |
+| hasAndBelongsToMany | Not supported yet |
 
 ## Loopback Connector APIs
 
 ### Implemented
 
 * connector.autoupdate
-
-
 * connector.create
 * connector.all
 * connector.update
