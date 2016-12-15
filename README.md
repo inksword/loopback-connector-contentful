@@ -1,6 +1,11 @@
 # loopback-connector-contentful
 The module is still under development, and not fully tested. I am going to use it with a project by Jan 2017, and still doing experiments with it currently.
 
+## 0.0.8 Release Notes
+
+* move all contentful specific options directly under `options: {...}` to `options: { contentful: {...} }`, such as spaceId and locale etc.
+* contentful model name can be different from loopback model name now.
+
 ## NodeJS Version
 
 Developed under NodeJS 6.9.1 with ES6. Will have a compatability test for some older versions, which show obvious compatable possibilties from [http://node.green/](http://node.green/). Here is a list of ES6 features used in the module:
@@ -36,11 +41,7 @@ Specify the datasource for your model in model-config.json.
 
 ```json
 "Product": {
-  "dataSource": "ds_contentful",
-  "options": {
-    "spaceId": "<space id>",
-    "locale": "en-US"
-  }
+  "dataSource": "ds_contentful"
 }
 ```
 
@@ -50,7 +51,12 @@ Model Definition
 {
   "name": "Product",
   "options": {
-    "displayField": "productName"
+    "contentful": {
+      "model": ["New Product", "Old Product"],
+      "displayField": "productName",
+      "spaceId": "<space id>",
+      "locale": "en-US"
+    }
   },
   "properties": {
     "productName": "text",
@@ -92,7 +98,41 @@ Model Definition
 }
 ```
 
+### Model Name Updating
 
+Contentful supports duplicated model names within the same space. However this module does not support such behaviour, model names must be unique within a space.
+
+If you just want contentful model name to be different from loopback model name, please define:
+
+```json
+{
+  "name": "Product",
+  "options": {
+    "contentful": {
+      "model": "My Product"
+    }
+  }
+  ...
+}
+```
+
+If you want to rename the model, an array of names must be provided to `options.contentful.model`, such as:
+
+```json
+{
+  "name": "Product",
+  "options": {
+    "contentful": {
+      "model": ["New Name", "Old Name 2", "Old Name 1"]
+    }
+  }
+  ...
+}
+```
+
+1. If "Old Name 2" is found in contentful space, it will be renamed to "New Name".
+2. Else If "Old Name 1" is found in contentful space, it will be renamed to "New Name".
+3. If both "Old Name 2" and "Old Name 1" are not found, a new model with "New Name" will be created.
 
 ### Space Resolving Order
 
