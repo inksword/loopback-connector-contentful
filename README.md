@@ -1,10 +1,11 @@
 # loopback-connector-contentful
 The module is still under development, and not fully tested. I am going to use it with a project by Jan 2017, and still doing experiments with it currently.
 
-## 0.0.8 Release Notes
+## 0.0.8 & 0.0.9 Release Notes
 
 * move all contentful specific options directly under `options: {...}` to `options: { contentful: {...} }`, such as spaceId and locale etc.
 * contentful model name can be different from loopback model name now.
+* model display field and description can also be updated now.
 
 ## NodeJS Version
 
@@ -52,10 +53,11 @@ Model Definition
   "name": "Product",
   "options": {
     "contentful": {
-      "model": ["New Product", "Old Product"],
-      "displayField": "productName",
       "spaceId": "<space id>",
       "locale": "en-US"
+      "model": ["New Product", "Old Product"],
+      "displayField": "productName",
+      "description": "model description for product"
     }
   },
   "properties": {
