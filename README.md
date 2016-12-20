@@ -1,12 +1,6 @@
 # loopback-connector-contentful
 The module is still under development, and not fully tested. I am going to use it with a project by Jan 2017, and still doing experiments with it currently.
 
-## 0.0.8 & 0.0.9 Release Notes
-
-* move all contentful specific options directly under `options: {...}` to `options: { contentful: {...} }`, such as spaceId and locale etc.
-* contentful model name can be different from loopback model name now.
-* model display field and description can also be updated now.
-
 ## NodeJS Version
 
 Developed under NodeJS 6.9.1 with ES6. Will have a compatability test for some older versions, which show obvious compatable possibilties from [http://node.green/](http://node.green/). Here is a list of ES6 features used in the module:
@@ -54,20 +48,20 @@ Model Definition
   "options": {
     "contentful": {
       "spaceId": "<space id>",
-      "locale": "en-US"
-      "model": ["New Product", "Old Product"],
+      "locale": "en-US",
+      "model": ["New Product Name", "Old Product Name"],
       "displayField": "productName",
       "description": "model description for product"
     }
   },
   "properties": {
-    "productName": "text",
+    "productName": "string",
     "productDescription": {
-      "type": "text",
+      "type": "string",
       "required": false,
       "contentful": {
         "name": "Product Description",
-        "dataType": "Text"
+        "dataType": "Text",
         "localized": false,
         "validations": [{"size": {"min": 20, "max": 200}}],
         "disabled": false,
@@ -88,6 +82,7 @@ Model Definition
         "name": "Product Categories",
         "localized": false,
         "validations": [],
+        "itemValidations": [],
         "disabled": false,
         "omitted": false
       }
@@ -100,11 +95,11 @@ Model Definition
 }
 ```
 
-### Model Name Updating
+### Model Name
 
 Contentful supports duplicated model names within the same space. However this module does not support such behaviour, model names must be unique within a space.
 
-If you just want contentful model name to be different from loopback model name, please define:
+If you just want contentful model name to be different from loopback model name, please define string value for `options.contentful.model` field:
 
 ```json
 {
@@ -113,12 +108,12 @@ If you just want contentful model name to be different from loopback model name,
     "contentful": {
       "model": "My Product"
     }
-  }
+  },
   ...
 }
 ```
 
-If you want to rename the model, an array of names must be provided to `options.contentful.model`, such as:
+If you want to rename the model, an array of names should be provided to `options.contentful.model`, such as:
 
 ```json
 {
@@ -127,7 +122,7 @@ If you want to rename the model, an array of names must be provided to `options.
     "contentful": {
       "model": ["New Name", "Old Name 2", "Old Name 1"]
     }
-  }
+  },
   ...
 }
 ```
@@ -164,27 +159,28 @@ module.exports = function(app) {
 
 ### LoopBack to Contentful Types
 
-| LoopBack Type | Contentful Type |
-| ------------- | --------------- |
-| Text/JSON/Any | Text            |
-| String        | Symbol          |
-| Number        | Number          |
-| Date          | Date            |
-| Boolean       | Boolean         |
-| GeoPoint      | Location        |
-| Object        | Object          |
-| ["string"]    | Array           |
+| LoopBack Data Type | Contentful Data Type |
+| ------------------ | -------------------- |
+| any                | Text                 |
+| string             | Symbol               |
+| number             | Number               |
+| date               | Date                 |
+| boolean            | Boolean              |
+| geopoint           | Location             |
+| object             | Object               |
+| ["string"]         | Array                |
 
 ### Model Relations
 
 The following relations can be automatically created during autoupdate phase:
 
-| Loopback Relations  | Status            |
-| ------------------- | ----------------- |
-| belongsTo           | Supported         |
-| hasMany             | Supported         |
-| hasManyThrough      | Not supported yet |
-| hasAndBelongsToMany | Not supported yet |
+| Loopback Relations  | Status              |
+| ------------------- | ------------------- |
+| belongsTo           | Implemented         |
+| hasOne              | Implemented         |
+| hasMany             | Implemented         |
+| hasManyThrough      | Not Implemented yet |
+| hasAndBelongsToMany | Not Implemented yet |
 
 ## Loopback Connector APIs
 
@@ -207,6 +203,38 @@ The following relations can be automatically created during autoupdate phase:
 - connector.destroy
 - connector.replaceById (a new feature - work in progress)
 - connector.updateAttributes 
+
+## 0.0.10 Release Notes
+
+- loopback does not recoganize text data type, and will prompt error message `Swagger: skipping unknown type "text".`. Although it can be ignored, it is recommended to write as below for text:
+
+  ```json
+  "productDescription": {
+    "type": "string",
+    "contentful": {
+      "dataType": "Text"
+    }
+  }
+  ```
+
+- added hasOne relation. Note: hasOne and belongsTo have the same implementation in contentful, they can be treated as alias.
+
+- Relations now support Asset as model type.
+
+- relation definitions will implicitly add the specified models to type validations. Categories field can only contains Category model object now:
+
+  ```json
+  "categories": {
+    "type": "hasMany",
+    "model": "Category"
+  }
+  ```
+
+## 0.0.8 & 0.0.9 Release Notes
+
+- move all contentful specific options directly under `options: {...}` to `options: { contentful: {...} }`, such as spaceId and locale etc.
+- contentful model name can be different from loopback model name now.
+- model display field and description can also be updated now.
 
 ## References
 
