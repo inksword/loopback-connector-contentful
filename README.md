@@ -1,15 +1,26 @@
 # loopback-connector-contentful
 The module is still under development, and not fully tested. I am going to use it with a project by Jan 2017, and still doing experiments with it currently.
 
+## Table of Contents
+
+- [NodeJS Version](#nodejs-version)
+- [How to Use](#how-to-use)
+  - [Model Renaming](#model-renaming)
+  - [Space Resolving Order](#space-resolving-order)
+  - [Locale Resolving Order](#locale-resolving-order)
+- [Autoupdate](#autoupdate)
+  - [LoopBack to Contentful Types](#loopback-to-contentful-types)
+  - [Model Relations](#model-relations)
+- [Loopback Connector APIs](#loopback-connector-apis)
+  - [Implemented APIs](#implemented-apis)
+  - [Not Yet Implemented APIs](#not-yet-implemented-apis)
+- [Development References](#development-references)
+- [Release Notes](#release-notes)
+
+
 ## NodeJS Version
 
-Developed under NodeJS 6.9.1 with ES6. Will have a compatability test for some older versions, which show obvious compatable possibilties from [http://node.green/](http://node.green/). Here is a list of ES6 features used in the module:
-
-- arrow function
-- class
-- object literals
-- promise
-- spread operator
+Developed under NodeJS 6.9.1 with ES6. Will have a compatability test for some older versions, which show obvious compatable possibilties from [http://node.green/](http://node.green/). Here is a list of ES6 features used in the module: arrow function, class, object literals, promise, spread operator.
 
 ## How to Use
 
@@ -28,6 +39,7 @@ Add the following configuration to the datasources.json.
   "accessToken": "<access token>",
   "spaceId": "<space id>",
   "locale": "en-US",
+  "respectContentfulClass": false,
   "debug": true | false
 }
 ```
@@ -95,7 +107,7 @@ Model Definition
 }
 ```
 
-### Model Name
+### Model Renaming
 
 Contentful supports duplicated model names within the same space. However this module does not support such behaviour, model names must be unique within a space.
 
@@ -150,11 +162,14 @@ When saving or retrieving a model, its local is resolved in the following order:
 ## Auto Update
 
 ```javascript
-module.exports = function(app) {
-  app.datasources['contentful'].autoupdate(function(err, result) {
+var contentful = app.datasources['contentful'];
+contentful.isActual(function(err, isActual) {
+  if (!isActual) {
+    contentful.autoupdate(function(err, result) {
 
-  });
-};
+    });
+  }
+})
 ```
 
 ### LoopBack to Contentful Types
@@ -184,27 +199,45 @@ The following relations can be automatically created during autoupdate phase:
 
 ## Loopback Connector APIs
 
-### Implemented
+### Implemented APIs
 
 * connector.autoupdate
 * connector.create
 * connector.all
 * connector.update
+* connector.count
 
-### Not Implemented Yet
+### Not Yet Implemented APIs
 
 - connector.updateOrCreate (optional, but see below)
 - connector.replaceOrCreate (a new feature - work in progress)
 - connector.findOrCreate (optional, but see below)
 - connector.buildNearFilter
 - connector.destroyAll
-- connector.count
 - connector.save
 - connector.destroy
 - connector.replaceById (a new feature - work in progress)
 - connector.updateAttributes 
 
-## 0.0.10 Release Notes
+## Development References
+
+The following references are used, while building the module:
+
+1. loopback guide on [building a connector](http://loopback.io/doc/en/lb2/Building-a-connector.html)
+2. loopback official connector [loopback-connector-mongodb](https://github.com/strongloop/loopback-connector-mongodb)
+3. [contentful management API](https://contentful.github.io/contentful-management.js/contentful-management/1.3.0/index.html)
+4. [contentful delivery API](https://contentful.github.io/contentful.js/contentful/3.7.0/index.html)
+
+## Release Notes
+
+### v0.0.11 
+
+* expose original contentful entries directly without transform, by adding `respectContentfulClass: true` in datasources.json.
+* fix version missmatch issue, when both properties and relations need to be updated for a content type.
+* added isActual API to skip autoupdate, when no changes detected.
+* prevent belongsTo relations to automatically add foreign keys to content types, such as brandId. 
+
+### v0.0.10
 
 - loopback does not recoganize text data type, and will prompt error message `Swagger: skipping unknown type "text".`. Although it can be ignored, it is recommended to write as below for text:
 
@@ -230,18 +263,8 @@ The following relations can be automatically created during autoupdate phase:
   }
   ```
 
-## 0.0.8 & 0.0.9 Release Notes
+### v0.0.9
 
 - move all contentful specific options directly under `options: {...}` to `options: { contentful: {...} }`, such as spaceId and locale etc.
 - contentful model name can be different from loopback model name now.
 - model display field and description can also be updated now.
-
-## References
-
-The following references are used, while building the module:
-
-1. loopback guide on [building a connector](http://loopback.io/doc/en/lb2/Building-a-connector.html)
-2. loopback official connector [loopback-connector-mongodb](https://github.com/strongloop/loopback-connector-mongodb)
-3. [contentful management API](https://contentful.github.io/contentful-management.js/contentful-management/1.2.1/index.html)
-4. [contentful delivery API](https://contentful.github.io/contentful.js/contentful/3.7.0/index.html)
-
