@@ -8,7 +8,7 @@ The module is still under development, and not fully tested. I am going to use i
   - [Model Renaming](#model-renaming)
   - [Space Resolving Order](#space-resolving-order)
   - [Locale Resolving Order](#locale-resolving-order)
-- [Autoupdate](#autoupdate)
+- [Auto Update](#auto-update)
   - [LoopBack to Contentful Types](#loopback-to-contentful-types)
   - [Model Relations](#model-relations)
 - [Loopback Connector APIs](#loopback-connector-apis)
@@ -102,7 +102,11 @@ Model Definition
     "brand": {
       "type": "belongsTo",
       "model": "Brand"
-    }
+    },
+    "image": {
+      "type": "hasMany",
+      "model": "Asset"
+    },
   }
 }
 ```
