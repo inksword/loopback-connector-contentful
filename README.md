@@ -5,13 +5,16 @@ The module is still under development, and not fully tested. I am going to use i
 
 - [NodeJS Version](#nodejs-version)
 - [How to Use](#how-to-use)
-  - [Model Renaming](#model-renaming)
-  - [Space Resolving Order](#space-resolving-order)
-  - [Locale Resolving Order](#locale-resolving-order)
+  - [Datasource Definition](#datasource-definition)
+    - [Space Resolving Order](#space-resolving-order)
+    - [Locale Resolving Order](#locale-resolving-order)
+  - [Model Definition](#model-definition)
+    - [Model Renaming](#model-renaming)
 - [Auto Update](#auto-update)
   - [LoopBack to Contentful Types](#loopback-to-contentful-types)
   - [Model Relations](#model-relations)
 - [Loopback Connector APIs](#loopback-connector-apis)
+  - [Delivery API](#delivery-api)
   - [Implemented APIs](#implemented-apis)
   - [Not Yet Implemented APIs](#not-yet-implemented-apis)
 - [Development References](#development-references)
@@ -30,29 +33,46 @@ Install the connector for your project.
 $ npm install loopback-connector-contentful --save
 ```
 
-Add the following configuration to the datasources.json.
+### Datasource Definition
 
 ```json
 "ds_contentful": {
   "name": "ds_contentful",
   "connector": "contentful",
-  "accessToken": "<access token>",
+  "accessToken": {
+    "delivery": {
+      "<space id>": "<access token>"
+    },
+    "management": "<access token>"
+  },
   "spaceId": "<space id>",
   "locale": "en-US",
-  "respectContentfulClass": false,
-  "debug": true | false
+  "respectContentfulClass": false
 }
 ```
 
-Specify the datasource for your model in model-config.json.
+| Property               | Type         | Default | Description                              |
+| ---------------------- | ------------ | ------- | ---------------------------------------- |
+| accessToken            | string \| {} |         | If string is provided, it will be treated as management api access token. Use object to provide delivery access tokens and management access token. |
+| respectContentfulClass | bool         | false   | If set to true, this module will return objects of underlying contentful library directly. It is recommended to set to false, and let this module help you do the model transformation according to loopback model definition. |
 
-```json
-"Product": {
-  "dataSource": "ds_contentful"
-}
-```
+#### Space Resolving Order
 
-Model Definition
+SpaceId **MUST** be defined in datasources.json file. When saving or retrieving a model, its space is resolved in the following order:
+
+1. Use spaceId defined in model-config.json. Raise error if no matching content type within the space. 
+2. Use spaceId defined in datasources.json. Raise error if no matching content type within the space. 
+3. Raise error if spaceId is not defined above.
+
+#### Locale Resolving Order
+
+When saving or retrieving a model, its local is resolved in the following order:
+
+1. Use locale defined in model-config.json.
+2. Use locale defined in datasources.json.
+3. If locale is not defined above, use the default locale of the space to save and retrieve models from contentful
+
+### Model Definition
 
 ```json
 {
@@ -111,7 +131,7 @@ Model Definition
 }
 ```
 
-### Model Renaming
+#### Model Renaming
 
 Contentful supports duplicated model names within the same space. However this module does not support such behaviour, model names must be unique within a space.
 
@@ -146,22 +166,6 @@ If you want to rename the model, an array of names should be provided to `option
 1. If "Old Name 2" is found in contentful space, it will be renamed to "New Name".
 2. Else If "Old Name 1" is found in contentful space, it will be renamed to "New Name".
 3. If both "Old Name 2" and "Old Name 1" are not found, a new model with "New Name" will be created.
-
-### Space Resolving Order
-
-SpaceId **MUST** be defined in datasources.json file. When saving or retrieving a model, its space is resolved in the following order:
-
-1. Use spaceId defined in model-config.json. Raise error if no matching content type within the space. 
-2. Use spaceId defined in datasources.json. Raise error if no matching content type within the space. 
-3. Raise error if spaceId is not defined above.
-
-### Locale Resolving Order
-
-When saving or retrieving a model, its local is resolved in the following order:
-
-1. Use locale defined in model-config.json.
-2. Use locale defined in datasources.json.
-3. If locale is not defined above, use the default locale of the space to save and retrieve models from contentful
 
 ## Auto Update
 
@@ -203,6 +207,20 @@ The following relations can be automatically created during autoupdate phase:
 
 ## Loopback Connector APIs
 
+### Delivery API
+
+Delivery API should only funciton with get methods. Currently `filter._contentfulApi` is default to management when omitted. This API is subject to change in future.
+
+```
+GET /products?filter={"_contentfulApi": "delivery", "include":["categories", "brand"]}
+```
+
+| Property       | Type   | Values                     | Default      | Description                          |
+| -------------- | ------ | -------------------------- | ------------ | ------------------------------------ |
+| _contentfulApi | string | "management" \| "delivery" | "management" | This may be not an elegant approach. |
+
+According to loopback document, `filter.include` must be provided to expose relation fields.
+
 ### Implemented APIs
 
 * connector.autoupdate
@@ -230,9 +248,15 @@ The following references are used, while building the module:
 1. loopback guide on [building a connector](http://loopback.io/doc/en/lb2/Building-a-connector.html)
 2. loopback official connector [loopback-connector-mongodb](https://github.com/strongloop/loopback-connector-mongodb)
 3. [contentful management API](https://contentful.github.io/contentful-management.js/contentful-management/1.3.0/index.html)
-4. [contentful delivery API](https://contentful.github.io/contentful.js/contentful/3.7.0/index.html)
+4. [contentful delivery API](https://contentful.github.io/contentful.js/contentful/3.8.0/index.html)
 
 ## Release Notes
+
+### v0.0.12
+
+* significant change on datasource.json definition file, to support both delivery API and management API. 
+* Relations can also be returned when fetch data with delivery API, please check [Delivery API](#delivery-api).
+* fix isActual API bugs, which always return isActual to false when relations are defined for models.
 
 ### v0.0.11 
 
