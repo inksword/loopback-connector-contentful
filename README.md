@@ -4,28 +4,37 @@ Although this project is used in a production environment, some featrues still r
 ## Table of Contents
 
 - [NodeJS Version](#nodejs-version)
+
 - [How to Use](#how-to-use)
+
+  - [Installation](#installation)
+  - [Auto Update](#auto-update)
   - [Datasource Definition](#datasource-definition)
-    - [Space Resolving Order](#space-resolving-order)
     - [Locale Resolving Order](#locale-resolving-order)
   - [Model Definition](#model-definition)
     - [Model Renaming](#model-renaming)
-- [Auto Update](#auto-update)
-  - [LoopBack to Contentful Types](#loopback-to-contentful-types)
+
+
+  - [LoopBack vs Contentful Data Types](#loopback-vs-contentful-data-types)
   - [Model Relations](#model-relations)
+
 - [Loopback Connector APIs](#loopback-connector-apis)
-  - [Delivery API](#delivery-api)
-  - [Implemented APIs](#implemented-apis)
+  - [Contentful API Hints](#contentful-api-hints)
+  - [Contentful API Support](#contentful-api-support)
   - [Not Yet Implemented APIs](#not-yet-implemented-apis)
+
 - [Development References](#development-references)
+
 - [Release Notes](#release-notes)
 
 
 ## NodeJS Version
 
-Developed under NodeJS 6.x with ES6 features: arrow function, class, object literals, promise, spread operator. Please find a version compatible from [http://node.green/](http://node.green/).
+Developed under NodeJS 6.x with ES6 features: arrow function, class, object literals, promise, spread operator. Please find a compatible node version from [http://node.green/](http://node.green/).
 
 ## How to Use
+
+### Installation
 
 Install the connector for your project.
 
@@ -33,9 +42,22 @@ Install the connector for your project.
 $ npm install loopback-connector-contentful --save
 ```
 
+### Auto Update
+
+```javascript
+var contentful = app.datasources['contentful'];
+contentful.isActual(function(err, isActual) {
+  if (!isActual) {
+    contentful.autoupdate(function(err, result) {
+
+    });
+  }
+})
+```
+
 ### Datasource Definition
 
-Only one space can be connected with each datasource definition. Previously aimed to support multiple spaces with a single datasource, this adds complexity to the logic.
+Only one space can be connected with each datasource definition. Previously aimed to support multiple spaces with a single datasource, however this adds complexity to the logic.
 
 ```json
 "contentful": {
@@ -74,8 +96,8 @@ When saving or retrieving a model, its local is resolved in the following order:
   "name": "Product",
   "options": {
     "contentful": {
-      "id": "<content type id>"
-      "name": ["New Product Name", "Old Product Name"],
+      "id": "<content type id>",
+      "name": "Shining Product",
       "locale": "en-US",
       "displayField": "productName",
       "description": "model description for product"
@@ -126,9 +148,13 @@ When saving or retrieving a model, its local is resolved in the following order:
 }
 ```
 
+Content type names and field names are automatically generated with lodash method _.startCase. You don't need to explicitly provide `"contentful"."name": "Product Description"` for property `productDescription`.
+
+Relation model `Asset` is reserved for Contentful Asset content type, no need to define a corresponding Asset model in LoopBack.
+
 #### Model Renaming
 
-**!!!Caution:** the following behavior is no longer needed if you use `"uniqueBy": "id"`, which is also the default behavior.
+**!!!Caution: the following behavior is no longer needed if you use `"uniqueBy": "id"`, which is also the default behavior.**
 
 Contentful supports duplicated model names within the same space. However this module does not support such behaviour, model names must be unique within a space.
 
@@ -164,20 +190,7 @@ If you want to rename the model, an array of names should be provided to `option
 2. Else If "Old Name 1" is found in contentful space, it will be renamed to "New Name".
 3. If both "Old Name 2" and "Old Name 1" are not found, a new model with "New Name" will be created.
 
-## Auto Update
-
-```javascript
-var contentful = app.datasources['contentful'];
-contentful.isActual(function(err, isActual) {
-  if (!isActual) {
-    contentful.autoupdate(function(err, result) {
-
-    });
-  }
-})
-```
-
-### LoopBack to Contentful Types
+### LoopBack vs Contentful Data Types
 
 | LoopBack Data Type | Contentful Data Type |
 | ------------------ | -------------------- |
@@ -192,8 +205,6 @@ contentful.isActual(function(err, isActual) {
 
 ### Model Relations
 
-The following relations can be automatically created during autoupdate phase:
-
 | Loopback Relations  | Status                |
 | ------------------- | --------------------- |
 | belongsTo           | Implemented           |
@@ -204,7 +215,7 @@ The following relations can be automatically created during autoupdate phase:
 
 ## Loopback Connector APIs
 
-### API Hints
+### Contentful API Hints
 
 Delivery API should only funciton with get methods. Currently ~~`filter._contentfulApi`~~ `filter.contentful.api` is default to ~~management~~ delivery when omitted.
 
@@ -218,14 +229,16 @@ GET /products?filter={"contentful": {"api": "preview"}, "include":["categories",
 
 According to loopback document, `filter.include` must be provided to expose relation fields.
 
-### Implemented APIs
+### Contentful API Support
 
-* connector.autoupdate
-* connector.create
-* connector.all
-* connector.update
-* connector.updateAttributes 
-* connector.count
+| Connector API              | Delivery (Published) | Preview (Draft) | Management (All) |
+| -------------------------- | -------------------- | --------------- | ---------------- |
+| connector.autoupdate       |                      |                 | ✓                |
+| connector.create           |                      |                 | ✓                |
+| connector.all              | ✓                    | ✓               | ✓                |
+| connector.update           |                      |                 | ✓                |
+| connector.updateAttributes |                      |                 | ✓                |
+| connector.count            | ✓                    | ✓               | ✓                |
 
 ### Not Yet Implemented APIs
 
