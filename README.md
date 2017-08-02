@@ -1,5 +1,5 @@
 # loopback-connector-contentful
-The module is still under development, and not fully tested. I am going to use it with a project by Jan 2017, and still doing experiments with it currently.
+Although this project is used in a production environment, some featrues still request thoroughly testing, and some behaviors are subject to change. Since 1.0.0 it has some breaking changes.
 
 ## Table of Contents
 
@@ -23,7 +23,7 @@ The module is still under development, and not fully tested. I am going to use i
 
 ## NodeJS Version
 
-Developed under NodeJS 6.9.1 with ES6. Will have a compatability test for some older versions, which show obvious compatable possibilties from [http://node.green/](http://node.green/). Here is a list of ES6 features used in the module: arrow function, class, object literals, promise, spread operator.
+Developed under NodeJS 6.x with ES6 features: arrow function, class, object literals, promise, spread operator. Please find a version compatible from [http://node.green/](http://node.green/).
 
 ## How to Use
 
@@ -35,34 +35,29 @@ $ npm install loopback-connector-contentful --save
 
 ### Datasource Definition
 
+Only one space can be connected with each datasource definition. Previously aimed to support multiple spaces with a single datasource, this adds complexity to the logic.
+
 ```json
-"ds_contentful": {
-  "name": "ds_contentful",
+"contentful": {
+  "name": "contentful",
   "connector": "contentful",
-  "accessToken": {
-    "delivery": {
-      "<space id>": "<access token>"
-    },
-    "management": "<access token>"
-  },
   "spaceId": "<space id>",
   "locale": "en-US",
-  "respectContentfulClass": false
+  "respectContentfulClass": false,
+  "uniqueBy": "name",
+  "accessTokens": {
+    "delivery": "<access token>",
+    "management": "<access token>",
+    "preview": "<access token>",
+  }
 }
 ```
 
-| Property               | Type         | Default | Description                              |
-| ---------------------- | ------------ | ------- | ---------------------------------------- |
-| accessToken            | string \| {} |         | If string is provided, it will be treated as management api access token. Use object to provide delivery access tokens and management access token. |
-| respectContentfulClass | bool         | false   | If set to true, this module will return objects of underlying contentful library directly. It is recommended to set to false, and let this module help you do the model transformation according to loopback model definition. |
-
-#### Space Resolving Order
-
-SpaceId **MUST** be defined in datasources.json file. When saving or retrieving a model, its space is resolved in the following order:
-
-1. Use spaceId defined in model-config.json. Raise error if no matching content type within the space. 
-2. Use spaceId defined in datasources.json. Raise error if no matching content type within the space. 
-3. Raise error if spaceId is not defined above.
+| Property               | Options        | Default | Description                              |
+| ---------------------- | -------------- | ------- | ---------------------------------------- |
+| accessTokens           | string \| {}   |         | If string is provided, it will be treated as ~~management~~ delivery access token. Use object to provide delivery, preview and management access tokens. If autoupdate is used, management access token must be provided. All 3 types of access tokens can be used standalone, but some actions cannot be performed if without one or another. |
+| respectContentfulClass | bool           | false   | If set to true, this module will return objects of underlying contentful library directly. It is recommended to set to false, and let this module help you do the model transformation according to loopback model definition. |
+| uniqueBy               | "id" \| "name" | "id"    | Since contentful SDK starts supporting creating content type with id, now id can be used to map LoopBack models and content types, rather than by content type name. The camel case of LoopBack model name will be used as content type id implicitly, otherwise please specify id in LoopBack model definition. |
 
 #### Locale Resolving Order
 
@@ -79,9 +74,9 @@ When saving or retrieving a model, its local is resolved in the following order:
   "name": "Product",
   "options": {
     "contentful": {
-      "spaceId": "<space id>",
+      "id": "<content type id>"
+      "name": ["New Product Name", "Old Product Name"],
       "locale": "en-US",
-      "model": ["New Product Name", "Old Product Name"],
       "displayField": "productName",
       "description": "model description for product"
     }
@@ -133,16 +128,18 @@ When saving or retrieving a model, its local is resolved in the following order:
 
 #### Model Renaming
 
+**!!!Caution:** the following behavior is no longer needed if you use `"uniqueBy": "id"`, which is also the default behavior.
+
 Contentful supports duplicated model names within the same space. However this module does not support such behaviour, model names must be unique within a space.
 
-If you just want contentful model name to be different from loopback model name, please define string value for `options.contentful.model` field:
+If you just want contentful model name to be different from loopback model name, please define string value for `options.contentful.name` field:
 
 ```json
 {
   "name": "Product",
   "options": {
     "contentful": {
-      "model": "My Product"
+      "name": "My Product"
     }
   },
   ...
@@ -156,7 +153,7 @@ If you want to rename the model, an array of names should be provided to `option
   "name": "Product",
   "options": {
     "contentful": {
-      "model": ["New Name", "Old Name 2", "Old Name 1"]
+      "name": ["New Name", "Old Name 2", "Old Name 1"]
     }
   },
   ...
@@ -184,7 +181,7 @@ contentful.isActual(function(err, isActual) {
 
 | LoopBack Data Type | Contentful Data Type |
 | ------------------ | -------------------- |
-| any                | Text                 |
+| any \| text        | Text                 |
 | string             | Symbol               |
 | number             | Number               |
 | date               | Date                 |
@@ -197,27 +194,27 @@ contentful.isActual(function(err, isActual) {
 
 The following relations can be automatically created during autoupdate phase:
 
-| Loopback Relations  | Status              |
-| ------------------- | ------------------- |
-| belongsTo           | Implemented         |
-| hasOne              | Implemented         |
-| hasMany             | Implemented         |
-| hasManyThrough      | Not Implemented yet |
-| hasAndBelongsToMany | Not Implemented yet |
+| Loopback Relations  | Status                |
+| ------------------- | --------------------- |
+| belongsTo           | Implemented           |
+| hasOne              | Implemented           |
+| hasMany             | Implemented           |
+| hasManyThrough      | *Not Implemented yet* |
+| hasAndBelongsToMany | *Not Implemented yet* |
 
 ## Loopback Connector APIs
 
-### Delivery API
+### API Hints
 
-Delivery API should only funciton with get methods. Currently `filter._contentfulApi` is default to management when omitted. This API is subject to change in future.
+Delivery API should only funciton with get methods. Currently ~~`filter._contentfulApi`~~ `filter.contentful.api` is default to ~~management~~ delivery when omitted.
 
 ```
-GET /products?filter={"_contentfulApi": "delivery", "include":["categories", "brand"]}
+GET /products?filter={"contentful": {"api": "preview"}, "include":["categories", "brand"]}
 ```
 
-| Property       | Type   | Values                     | Default      | Description                          |
-| -------------- | ------ | -------------------------- | ------------ | ------------------------------------ |
-| _contentfulApi | string | "management" \| "delivery" | "management" | This may be not an elegant approach. |
+| Property   | Type   | Values                                  | Default    | Description                          |
+| ---------- | ------ | --------------------------------------- | ---------- | ------------------------------------ |
+| contentful | string | "delivery" \| "preview" \| "management" | "delivery" | This may be not an elegant approach. |
 
 According to loopback document, `filter.include` must be provided to expose relation fields.
 
@@ -227,6 +224,7 @@ According to loopback document, `filter.include` must be provided to expose rela
 * connector.create
 * connector.all
 * connector.update
+* connector.updateAttributes 
 * connector.count
 
 ### Not Yet Implemented APIs
@@ -239,18 +237,25 @@ According to loopback document, `filter.include` must be provided to expose rela
 - connector.save
 - connector.destroy
 - connector.replaceById (a new feature - work in progress)
-- connector.updateAttributes 
 
 ## Development References
 
 The following references are used, while building the module:
 
-1. loopback guide on [building a connector](http://loopback.io/doc/en/lb2/Building-a-connector.html)
-2. loopback official connector [loopback-connector-mongodb](https://github.com/strongloop/loopback-connector-mongodb)
-3. [contentful management API](https://contentful.github.io/contentful-management.js/contentful-management/1.3.0/index.html)
-4. [contentful delivery API](https://contentful.github.io/contentful.js/contentful/3.8.0/index.html)
+1. [LoopBack Types](https://loopback.io/doc/en/lb3/LoopBack-types.html)
+2. [LoopBack Building a Connector](http://loopback.io/doc/en/lb3/Building-a-connector.html)
+3. loopback official connector [loopback-connector-mongodb](https://github.com/strongloop/loopback-connector-mongodb)
+4. [contentful management API](https://contentful.github.io/contentful-management.js/contentful-management/3.10.0/index.html)
+5. [contentful delivery API](https://contentful.github.io/contentful.js/contentful/4.5.0/index.html)
 
 ## Release Notes
+
+### v1.0.0 [Breaking Changes]
+
+* model definition keypath change `options.contentful.model` => `options.contentful.name`
+* datasource definition changes, as only one space is alowed to be accessed from one datasource.
+* add support for preview api
+* implemented `connector.updateAttributes` method, therefore HTTP `PATCH` method is available.
 
 ### v0.0.12
 
