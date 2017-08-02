@@ -1,6 +1,6 @@
 {
   "name": "loopback-connector-contentful",
-  "version": "0.0.12",
+  "version": "1.0.0",
   "description": "the loopback connector for contentful api",
   "main": "index.js",
   "scripts": {
