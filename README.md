@@ -15,13 +15,13 @@ Although this project is used in a production environment, some featrues still r
     - [Model Renaming](#model-renaming)
 
 
-  - [LoopBack vs Contentful Data Types](#loopback-vs-contentful-data-types)
-  - [Model Relations](#model-relations)
+- [LoopBack vs Contentful Data Types](#loopback-vs-contentful-data-types)
+- [Model Relations](#model-relations)
 
 - [Loopback Connector APIs](#loopback-connector-apis)
-  - [Contentful API Hints](#contentful-api-hints)
-  - [Contentful API Support](#contentful-api-support)
-  - [Not Yet Implemented APIs](#not-yet-implemented-apis)
+    - [Contentful API Hints](#contentful-api-hints)
+    - [Contentful API Support](#contentful-api-support)
+    - [Not Yet Implemented APIs](#not-yet-implemented-apis)
 
 - [Development References](#development-references)
 
@@ -262,6 +262,11 @@ The following references are used, while building the module:
 5. [contentful delivery API](https://contentful.github.io/contentful.js/contentful/4.5.0/index.html)
 
 ## Release Notes
+
+### v1.1.1
+
+* fix content type reference issue internally
+* fix versionMissMatch issue, during create content type relations
 
 ### v1.0.0 [Breaking Changes]
 
