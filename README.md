@@ -194,7 +194,7 @@ If you want to rename the model, an array of names should be provided to `option
 
 | LoopBack Data Type | Contentful Data Type |
 | ------------------ | -------------------- |
-| any \| text        | Text                 |
+| any                | Text                 |
 | string             | Symbol               |
 | number             | Number               |
 | date               | Date                 |
@@ -203,15 +203,26 @@ If you want to rename the model, an array of names should be provided to `option
 | object             | Object               |
 | ["string"]         | Array                |
 
+For types cannot be mapped implicitly, please use contentful specific settings:
+
+```json
+"propertyName": {
+  "type": "string",
+  "contentful": {
+  	"dataType": "Text"
+  }
+}
+```
+
 ### Model Relations
 
-| Loopback Relations  | Status                |
-| ------------------- | --------------------- |
-| belongsTo           | Implemented           |
-| hasOne              | Implemented           |
-| hasMany             | Implemented           |
-| hasManyThrough      | *Not Implemented yet* |
-| hasAndBelongsToMany | *Not Implemented yet* |
+| Loopback Relations  | Status      |
+| ------------------- | ----------- |
+| belongsTo           | Implemented |
+| hasOne              | Implemented |
+| hasMany             | Implemented |
+| hasManyThrough      | N/A         |
+| hasAndBelongsToMany | N/A         |
 
 ## Loopback Connector APIs
 
@@ -220,12 +231,12 @@ If you want to rename the model, an array of names should be provided to `option
 Delivery API should only funciton with get methods. Currently ~~`filter._contentfulApi`~~ `filter.contentful.api` is default to ~~management~~ delivery when omitted.
 
 ```
-GET /products?filter={"contentful": {"api": "preview"}, "include":["categories", "brand"]}
+GET api/products?filter={"contentful": {"api": "preview"}, "include":["categories", "brand"]}
 ```
 
-| Property   | Type   | Values                                  | Default    | Description                          |
-| ---------- | ------ | --------------------------------------- | ---------- | ------------------------------------ |
-| contentful | string | "delivery" \| "preview" \| "management" | "delivery" | This may be not an elegant approach. |
+| Property       | Type   | Values                                  | Default    |
+| -------------- | ------ | --------------------------------------- | ---------- |
+| contentful.api | string | "delivery" \| "preview" \| "management" | "delivery" |
 
 According to loopback document, `filter.include` must be provided to expose relation fields.
 
